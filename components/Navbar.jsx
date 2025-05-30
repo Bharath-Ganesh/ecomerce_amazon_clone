@@ -6,6 +6,10 @@ import { useAppContext } from "@/context/AppContext";
 import Image from "next/image";
 import { useClerk, UserButton } from "@clerk/nextjs";
 
+/*
+  The `@` symbol in imports is a path alias (set in jsconfig.json/tsconfig.json) that points to a base directory, like src/. This makes imports shorter and easier to manage.
+*/
+
 const Navbar = () => {
   const { isSeller, router, user } = useAppContext();
   const { openSignIn } = useClerk();
