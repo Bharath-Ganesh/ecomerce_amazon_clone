@@ -2,7 +2,9 @@
 import { productsDummyData, userDummyData } from "@/assets/assets";
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
-import { useUser } from "@clerk/nextjs";
+import { useUser, useAuth } from "@clerk/nextjs";
+import { toast } from "react-hot-toast";
+import axios from "axios";
 
 export const AppContext = createContext();
 
@@ -15,17 +17,43 @@ export const AppContextProvider = (props) => {
   const router = useRouter();
 
   const { user } = useUser();
+  const { getToken } = useAuth();
+
   const [products, setProducts] = useState([]);
   const [userData, setUserData] = useState(false);
-  const [isSeller, setIsSeller] = useState(true);
+  const [isSeller, setIsSeller] = useState(false);
   const [cartItems, setCartItems] = useState({});
 
   const fetchProductData = async () => {
     setProducts(productsDummyData);
   };
 
+  // Role based auth
+  // Fetches user data and checks if user has seller role in their metadata
+  // If user is a seller, updates isSeller state to true
+  // Sets dummy user data for development purposes
   const fetchUserData = async () => {
-    setUserData(userDummyData);
+    try {
+      if (user.publicMetadata.role === "seller") {
+        setIsSeller(true);
+      }
+      const token = await getToken();
+      const { data } = await axios.get("/api/user/data", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (data.success) {
+        setUserData(data.user);
+        setIsSeller(data.user.cart.length);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const addToCart = async (itemId) => {
@@ -74,11 +102,14 @@ export const AppContextProvider = (props) => {
   }, []);
 
   useEffect(() => {
-    fetchUserData();
-  }, []);
+    if (user) {
+      fetchUserData();
+    }
+  }, [user]);
 
   const value = {
     user,
+    getToken,
     currency,
     router,
     isSeller,
