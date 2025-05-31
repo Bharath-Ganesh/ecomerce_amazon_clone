@@ -1,8 +1,7 @@
-import connectDB from "@/config/db"
-import Order from "@/models/Order"
 import { getAuth } from "@clerk/nextjs/server"
 import { NextResponse } from "next/server"
 import { inngest } from "@/config/inngest"
+import Product from "@/models/Product"
 
 export async function POST(request) {
     try {
@@ -14,8 +13,9 @@ export async function POST(request) {
         }
 
         // calculate amount using items
-        const amount = items.reduce((acc, item) => {
-            return acc + (item.price * item.quantity);
+        const amount = await items.reduce(async (acc, item) => {
+            const product = await Product.findById(item.productId);
+            return await acc + product.offerPrice * item.quantity;
         }, 0);
 
         await inngest.send({
