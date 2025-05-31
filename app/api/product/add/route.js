@@ -1,46 +1,3 @@
-/**
- * Product Creation API Endpoint (POST /api/product/add)
- * --------------------------------------------------
- * Handles creation of new products by authenticated sellers in our e-commerce platform.
- * 
- * Technical Implementation:
- * 1. Authentication: Uses Clerk's getAuth() to verify user identity and custom authSeller() 
- *    middleware to validate seller privileges via user metadata
- * 
- * 2. Form Processing: 
- *    - Accepts multipart/form-data containing product details and images
- *    - Validates required fields: name, description, category, price, offerPrice
- *    - Processes multiple image uploads (required minimum: 1 image)
- * 
- * 3. Image Processing:
- *    - Converts uploaded files to array buffers for streaming
- *    - Parallel upload to Cloudinary CDN using upload_stream
- *    - Collects secure_urls for database storage
- * 
- * 4. Database Operations:
- *    - Connects to MongoDB using connection pooling
- *    - Creates product document with normalized data
- *    - Stores Cloudinary URLs in image array
- * 
- * Error Handling:
- * - Authorization failures return 'Not authorized'
- * - Missing images return validation error
- * - All other errors logged and returned with descriptive messages
- * 
- * @param {Request} request - Multipart form data containing:
- *   - name: string
- *   - description: string
- *   - category: string
- *   - price: number
- *   - offerPrice: number
- *   - images: File[]
- * 
- * @returns {Response} JSON response containing:
- *   - success: boolean
- *   - message: string
- *   - newProduct?: Product (on success)
- */
-
 import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import authSeller from "@/lib/authSeller";
@@ -59,23 +16,37 @@ export async function POST(request) {
     try {
         // Get authenticated user ID from Clerk
         const { userId } = getAuth(request);
+        console.log("Inside the route");
+        console.log(userId);
 
         // Verify user has seller privileges
         const isSeller = await authSeller(userId);
         if (!isSeller) {
+            console.log("Not authorized");
+
             return NextResponse.json({ success: false, message: "Not authorized" });
         }
+
 
         // Extract product details from multipart form data
         const formData = await request.formData();
         const name = formData.get('name');
+
         const description = formData.get('description');
         const category = formData.get('category');
         const price = formData.get('price');
         const offerPrice = formData.get('offerPrice');
 
+        console.log(name);
+        console.log(description);
+        console.log(category);
+        console.log(price);
+        console.log(offerPrice);
         // Validate image files are provided
         const files = formData.getAll('images');
+        console.log(files);
+
+        console.log(files);
         if (!files || files.length === 0) {
             return NextResponse.json({
                 success: false,
@@ -105,9 +76,10 @@ export async function POST(request) {
                 })
             })
         )
+
         // Extract secure URLs from Cloudinary response
         const image = result.map(result => result.secure_url)
-
+        console.log(image);
         // Connect to MongoDB and create new product
         await connectDB()
 
@@ -126,6 +98,7 @@ export async function POST(request) {
 
     } catch (error) {
         // Log error for debugging and return user-friendly message
+        console.log("Error");
         console.log(error);
         return NextResponse.json({ success: false, message: error.message });
     }

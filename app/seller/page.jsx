@@ -7,6 +7,7 @@ import { toast } from "react-hot-toast";
 import axios from "axios";
 
 const AddProduct = () => {
+  // TODO : The product is not being added to the database
   const { getToken } = useAppContext();
 
   const [files, setFiles] = useState([]);
@@ -19,14 +20,18 @@ const AddProduct = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData();
-    formData.append("name", name);
-    formData.append("description", description);
-    formData.append("category", category);
-    formData.append("price", price);
-    formData.append("offerPrice", offerPrice);
+    try {
+      formData.append("name", name);
+      formData.append("description", description);
+      formData.append("category", category);
+      formData.append("price", price);
+      formData.append("offerPrice", offerPrice);
 
-    for (let i = 0; i < files.length; i++) {
-      formData.append("images", files[i]);
+      for (let i = 0; i < files.length; i++) {
+        formData.append("images", files[i]);
+      }
+    } catch (error) {
+      console.log(error.message);
     }
 
     try {
@@ -37,6 +42,7 @@ const AddProduct = () => {
           Authorization: `Bearer ${token}`,
         },
       });
+      console.log(data);
 
       if (data.success) {
         toast.success(data.message);
@@ -48,6 +54,7 @@ const AddProduct = () => {
         setOfferPrice("");
       }
     } catch (error) {
+      console.log(error.message);
       toast.error(error.message);
     }
   };
