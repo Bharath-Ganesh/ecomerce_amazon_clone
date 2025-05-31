@@ -14,6 +14,7 @@ export const inngest = new Inngest({ id: "ecommerce-next" });
 // Import database connection and User model
 import connectDB from "./db";
 import User from "../models/User";
+import Order from "../models/Order";
 
 /**
  * Inngest function to handle new user creation events from Clerk
@@ -105,5 +106,39 @@ export const syncUserDeletion = inngest.createFunction(
         // findByIdAndDelete is a Mongoose query helper method
         // It's automatically available on Mongoose models and combines findById and remove operations
         await User.findByIdAndDelete(id);
+    }
+);
+
+
+/**
+ * Inngest function to handle order creation events
+ * Creates new orders in MongoDB when triggered
+ * 
+ * @event order/created - Triggered when a new order is created
+ * @param {Object} event - Contains order details including items, amount, address
+ */
+export const createUserOrder = inngest.createFunction(
+    {
+        id: "create-user-order",
+        name: "Create User Order",
+        batchEvents: {
+            maxSize: 25,
+            timeout: "5s"
+        }
+    },
+    { event: "order/created" },
+    async ({ events }) => {
+        const orders = events.map((event) => ({
+            userId: event.data.userId,
+            items: event.data.items,
+            amount: event.data.amount,
+            address: event.data.address,
+            date: Date.now()
+        }));
+
+        await connectDB();
+        await Order.insertMany(orders);
+        return { success: true, processed: orders.length, message: "Orders created successfully" };
+
     }
 );

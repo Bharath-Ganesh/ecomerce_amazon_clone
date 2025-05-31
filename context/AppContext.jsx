@@ -26,6 +26,21 @@ export const AppContextProvider = (props) => {
 
   const fetchProductData = async () => {
     setProducts(productsDummyData);
+    // try {
+    //   // Make API request to get product list
+    //   const { data } = await axios.get("/api/product/list");
+
+    //   // If successful, update products state
+    //   if (data.success) {
+    //     setProducts(data.products);
+    //   } else {
+    //     // Show error message if request failed
+    //     toast.error(data.message);
+    //   }
+    // } catch (error) {
+    //   // Show error message if request throws error
+    //   toast.error(error.message);
+    // }
   };
 
   // Role based auth
@@ -64,6 +79,19 @@ export const AppContextProvider = (props) => {
       cartData[itemId] = 1;
     }
     setCartItems(cartData);
+    if (user) {
+      try {
+        const token = await getToken();
+        await axios.post(
+          "/api/cart/update",
+          { cartData },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        toast.success("Item added to cart");
+      } catch (error) {
+        toast.error(error.message);
+      }
+    }
   };
 
   const updateCartQuantity = async (itemId, quantity) => {
@@ -74,6 +102,19 @@ export const AppContextProvider = (props) => {
       cartData[itemId] = quantity;
     }
     setCartItems(cartData);
+    if (user) {
+      try {
+        const token = await getToken();
+        await axios.post(
+          "/api/cart/update",
+          { cartData },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        toast.success("Cart updated");
+      } catch (error) {
+        toast.error(error.message);
+      }
+    }
   };
 
   const getCartCount = () => {
