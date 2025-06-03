@@ -6,19 +6,35 @@ import { useUser, useAuth } from "@clerk/nextjs";
 import { toast } from "react-hot-toast";
 import axios from "axios";
 
+// AppContext is a React context object that will be used to share state and functions across components
+// It will be created using the createContext function
 export const AppContext = createContext();
 
+// useAppContext is a custom hook that returns the AppContext object
+// It uses the useContext hook to access the AppContext object
 export const useAppContext = () => {
   return useContext(AppContext);
 };
 
+// AppContextProvider is a wrapper component that provides global application state
+// It uses React's Context API to share state and functions across components
+// By wrapping children components, it enables state management throughout the app
 export const AppContextProvider = (props) => {
   const currency = process.env.NEXT_PUBLIC_CURRENCY;
+
+  // useRouter is a hook that returns the router object
+  // It is used to navigate between pages in the app
   const router = useRouter();
 
+  // useUser is a hook that returns the user object
+  // It is used to access user information
   const { user } = useUser();
+
+  // useAuth is a hook that returns the auth object
+  // It is used to access authentication methods
   const { getToken } = useAuth();
 
+  // useState is a hook that returns a state variable and a function to update it
   const [products, setProducts] = useState([]);
   const [userData, setUserData] = useState(false);
   const [isSeller, setIsSeller] = useState(false);
