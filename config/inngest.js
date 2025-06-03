@@ -9,7 +9,7 @@ import { Inngest } from "inngest";
 
 // Create a new Inngest client instance for handling events
 // The id parameter identifies this specific application
-export const inngest = new Inngest({ id: "ecommerce-next" });
+export const inngest = new Inngest({ id: "ecommerce-amazon-clone" });
 
 // Import database connection and User model
 import connectDB from "./db";
