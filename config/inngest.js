@@ -27,7 +27,7 @@ export const syncUserCreation = inngest.createFunction(
     {
         id: 'sync-user-from-clerk'
     },
-    { event: 'clerk/user.created' },
+    { event: 'user.created' },
     async ({ event }) => {
         const { id, first_name, last_name, email_addresses, image_url } = event.data
         const userData = {
@@ -56,7 +56,7 @@ export const syncUserUpdation = inngest.createFunction(
 
         id: "update-user-from-clerk"
     },
-    { event: "clerk/user.updated" },
+    { event: "user.updated" },
     async ({ event }) => {
         // Destructure relevant fields from event data
         const { id, first_name, last_name, email_addresses, image_url } = event.data;
@@ -87,7 +87,7 @@ export const syncUserDeletion = inngest.createFunction(
     {
         id: "delete-user-with-clerk"
     },
-    { event: "clerk/user.deleted" },
+    { event: "user.deleted" },
     async ({ event }) => {
         // Extract user ID from event data
         const { id } = event.data;
