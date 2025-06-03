@@ -13,11 +13,11 @@ export const inngest = new Inngest({ id: "ecommerce-next" });
 
 // Import database connection and User model
 import connectDB from "./db";
-import User from "../models/User";
-import Order from "../models/Order";
+import User from "@/models/User";
+import Order from "@/models/Order";
 
 /**
- * Inngest function to handle new user creation events from Clerk
+ * Inngest Function to save user data to a database
  * This function syncs newly created users to our MongoDB database
  * 
  * @event user/user.created - Triggered when a new user is created in Clerk
@@ -25,24 +25,17 @@ import Order from "../models/Order";
  */
 export const syncUserCreation = inngest.createFunction(
     {
-        id: "sync-user-from-clerk",
-        name: "Sync User from Clerk"
+        id: 'sync-user-from-clerk'
     },
-    { event: "user/user.created" },
+    { event: 'clerk/user.created' },
     async ({ event }) => {
-        // Connect to MongoDB database
-        await connectDB();
-
-        // Extract user information from the event
-        const userData = event.data;
-
-        // Create new User model instance with required fields
-        const user = new User({
-            _id: userData.id,
-            name: userData.name,
-            email: userData.email,
-            password: userData.password
-        });
+        const { id, first_name, last_name, email_addresses, image_url } = event.data
+        const userData = {
+            _id: id,
+            email: email_addresses[0].email_address,
+            name: first_name + ' ' + last_name,
+            imageUrl: image_url
+        }
 
         // Connect and save the new user to database
         await connectDB();
