@@ -1,7 +1,7 @@
 import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import authSeller from "@/lib/authSeller";
-import cloudinary from "cloudinary";
+import { v2 as cloudinary } from "cloudinary";
 import Product from "@/models/Product";
 import connectDB from "@/config/db";
 
@@ -77,7 +77,7 @@ export async function POST(request) {
             })
         )
 
-        // Extract secure URLs from Cloudinary response
+        // Extract secure URLs from Cloudinary response 
         const image = result.map(result => result.secure_url)
         console.log(image);
         // Connect to MongoDB and create new product
