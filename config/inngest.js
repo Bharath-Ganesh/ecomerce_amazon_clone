@@ -25,22 +25,32 @@ import Order from "@/models/Order";
  */
 export const syncUserCreation = inngest.createFunction(
     {
-        id: 'sync-user-from-clerk'
+        id: "sync-user-from-clerk",
     },
-    { event: 'user.created' },
-    async ({ event }) => {
-        const { id, first_name, last_name, email_addresses, image_url } = event.data
-        const userData = {
-            _id: id,
-            email: email_addresses[0].email_address,
-            name: first_name + ' ' + last_name,
-            imageUrl: image_url
-        }
+    { event: "clerk/user.created" },
+    async ({ event, step }) => {
+        try {
+            const { id, first_name, last_name, email_addresses, image_url } = event.data;
 
-        // Connect and save the new user to database
-        await connectDB();
-        // User.create() is a Mongoose model method that creates a new document
-        await User.create(userData);
+            if (!id || !email_addresses?.[0]?.email_address || !first_name || !last_name || !image_url) {
+                throw new Error("Missing required user fields in Clerk event");
+            }
+
+            const userData = {
+                _id: id,
+                email: email_addresses[0].email_address,
+                name: `${first_name} ${last_name}`,
+                imageUrl: image_url,
+            };
+
+            await connectDB();
+            await User.create(userData);
+
+            return { status: "success" };
+        } catch (err) {
+            console.error("User sync failed:", err.message);
+            return { status: "error", error: err.message };
+        }
     }
 );
 
@@ -56,7 +66,7 @@ export const syncUserUpdation = inngest.createFunction(
 
         id: "update-user-from-clerk"
     },
-    { event: "user.updated" },
+    { event: "clerk/user.updated" },
     async ({ event }) => {
         // Destructure relevant fields from event data
         const { id, first_name, last_name, email_addresses, image_url } = event.data;
@@ -87,7 +97,7 @@ export const syncUserDeletion = inngest.createFunction(
     {
         id: "delete-user-with-clerk"
     },
-    { event: "user.deleted" },
+    { event: "clerk/user.deleted" },
     async ({ event }) => {
         // Extract user ID from event data
         const { id } = event.data;
@@ -112,7 +122,7 @@ export const syncUserDeletion = inngest.createFunction(
 export const createUserOrder = inngest.createFunction(
     {
         id: "create-user-order",
-        name: "Create User Order",
+        name: "create-user-order",
         batchEvents: {
             maxSize: 5,
             timeout: "5s"
